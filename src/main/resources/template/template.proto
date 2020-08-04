@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+option java_outer_classname = "${proto.protoClass}Proto";
+package auto.grpc.${proto.protoName};
+
+//${common.name}服务
+service ${proto.protoClass}Service {
+  //新增
+  rpc Add (Info) returns (Empty) {
+  }
+  //删除
+  rpc Del (Id) returns (Empty) {
+  }
+  //修改
+  rpc Update (Info) returns (Empty) {
+  }
+  //查询
+  rpc Find (Search) returns (List) {
+  }
+  //导出
+  rpc Export (Search) returns (Id) {
+  }
+}
+
+//id
+message Id {
+  string id = 1;
+}
+
+//空对象
+message Empty {
+
+}
+
+//详情
+message Info {
+  string id = 1;
+  string name = 2;
+  string remark = 3; //备注
+  ${proto.info}
+}
+
+//集合
+message List {
+  repeated Info infos = 1; //详情集合
+  int32 count = 2; //总数
+}
+
+//查询条件
+message Search {
+  string keyword = 1; //关键字
+  int32 page = 2; //分页:页数 从1开始
+  int32 count = 3; //分页:每页总数
+  repeated string ids = 4; //id集合
+}
+
+
