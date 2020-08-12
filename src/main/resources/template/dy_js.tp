@@ -1,0 +1,255 @@
+/**
+ * ${html.title}
+ * @type {{}}
+ */
+const ${html.jsVarName} = {
+  cTable: {},
+  /**
+   *初始化
+   */
+  init() {
+    C.initUi();
+    let search = {
+      keyword: ''
+    };
+    //按钮初始化
+    {
+      <if:addButton>
+      $('#addButton').on('click', () => {
+        ${html.jsVarName}.add();
+      });
+      </if:addButton>
+      <if:exportAllButton>
+      $('#exportAllButton').on('click', () => {
+         this.export();
+      });
+      </if:exportAllButton>
+      <if:addButton>
+      $('#exportCheckedButton').on('click', () => {
+  ``````let ids = this.cTable.getCheckedIdArray();
+        if (ids.length > 0) {
+          this.export(ids);
+        }``````
+      });
+      </if:addButton>
+      $('[data-ui-button-search-now]').on('click', () => {
+        ${html.jsVarName}.find(search);
+      });
+    }
+    //关键字搜索项
+    {
+      let searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('input', function (evt) {
+        let me = evt.target;
+        let word = me.value;
+        console.debug('关键词', word);
+        search.keyword = word;
+      });
+      searchInput.addEventListener('keydown', function (evt) {
+        if (evt.key === 'Enter') {
+          ${html.jsVarName}.find(search);
+        }
+      })
+    }
+    //切换控件
+    {
+    <if:hasToggle1>
+      let ${html.toggle1} = new CUiButtonToggle(
+          document.getElementById('${html.toggle1}'),
+          new Map([${html.toggle1Data}])
+      );
+      ${html.toggle1}.addListener(array => {
+        search['${html.toggle1Name}'] = array;
+        ${html.jsVarName}.find(search);
+      });
+    </if:hasToggle1>
+    <if:hasToggle2>
+      let ${html.toggle2} = new CUiButtonToggle(
+          document.getElementById('${html.toggle2}'),
+          new Map([${html.toggle2Data}])
+      );
+      ${html.toggle2}.addListener(array => {
+        search['${html.toggle2Name}'] = array;
+        ${html.jsVarName}.find(search);
+      });
+    </if:hasToggle2>
+    }
+    ${html.jsVarName}.find(search);
+  },
+  /**
+   *新增
+   */
+  add() {
+    let table = this.table({}, false);
+    let dialog = new CDialog("新增");
+    dialog.setContent(table);
+    dialog.addAction('保存', function () {
+      let v = Tool.formValidator(table);
+      if (v) {
+        ${html.jsVarName}.API('add', v, () => {
+          dialog.destroy();
+          window.location.reload();
+        });
+      }
+    });
+    dialog.addAction('关闭', function () {
+      dialog.destroy();
+    }, true);
+  },
+  /**
+   * 删除
+   * @param id
+   */
+  del(id) {
+    let uiTipDialog = new CTipDialog('提示', '确定删除？');
+    uiTipDialog.addAction('确定', () => {
+      ${html.jsVarName}.API('delete', {id: id}, () => {
+        window.location.reload();
+      });
+    });
+    uiTipDialog.addAction('取消', () => {
+      uiTipDialog.destroy();
+    }, true);
+  },
+  /**
+   *修改
+   */
+  update(data) {
+    let table = this.table(data, false);
+    let dialog = new CDialog("修改");
+    dialog.setContent(table);
+    dialog.addAction('保存', function () {
+      if (v) {
+        v.id = data.id;
+        ${html.jsVarName}.API('update', v, () => {
+          dialog.destroy();
+          window.location.reload();
+        });
+      }
+    });
+    dialog.addAction('关闭', function () {
+      dialog.destroy();
+    }, true);
+  },
+  /**
+   * 查询
+   * @param search
+   */
+  find(search) {
+    console.log('重新加载列表', search);
+    let listContainer = document.getElementById('list');
+    listContainer.innerHTML = '';
+    let dataCount = 0;
+    ${html.jsVarName}.cTable = new CTable(
+        listContainer,
+        ${js.listView},
+        {
+          check: true,
+          checkMultiple: true,
+          no: true,
+          action: true,
+          dataCountElement: document.body.querySelector('.ui-list-count'),
+          moreCallback: currentCount => {
+            //加载数据并显示
+            searchList(currentCount/NP.page_count+1);
+          }
+        }
+    );
+    //显示数据
+    let searchList = function (start) {
+      let appendList = function (data) {
+        let actionArray = [];
+        <if:view>
+        let viewAction = C_HTML_TO_ELEMENT('<i class="iconfont icon-chakan" title="查看"></i>');
+        viewAction.addEventListener('click', () => {
+          ${html.jsVarName}.view(data);
+        });
+        actionArray.push(viewAction);
+        </if:view>
+        <if:edit>
+        let editAction = C_HTML_TO_ELEMENT('<i class="iconfont icon-bianji" title="修改"></i>');
+        editAction.addEventListener('click', () => {
+          ${html.jsVarName}.update(data);
+        });
+        actionArray.push(editAction);
+        </if:edit>
+        <if:delete>
+        let deleteAction = C_HTML_TO_ELEMENT('<i class="iconfont icon-shanchu" title="删除"></i>');
+        deleteAction.addEventListener('click', () => {
+          ${html.jsVarName}.del(data.id);
+        });
+        actionArray.push(deleteAction);
+        </if:delete>
+        ${html.jsVarName}.cTable.append(
+            data.id,
+            (array => {
+              return array.map(o => data[o])
+            })(${js.listData}),
+            actionArray,
+            dataCount
+        );
+      };
+      search.page = start;
+      search.count = C.page_count;
+      let uiTipWorking = new CTipWorking('正在加载数据');
+      ${html.jsVarName}.API('find', search, data => {
+        dataCount = data.count;
+        for (let o of data.infos) {
+          appendList(o);
+        }
+        uiTipWorking.destroy();
+      });
+    };
+    searchList(1);
+  },
+  /**
+   * 详情
+   */
+  view(data) {
+    let table = this.table(data, true);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        table(data, true);
+    let dialog = new CDialog("详情");
+    dialog.setContent(table);
+    dialog.addAction('关闭', function () {
+      dialog.destroy();
+    }, true);
+  },
+  /**
+   * 导出
+   */
+  export(ids=[]) {
+    let uiTipWorking = new CTipWorking('正在导出数据');
+    this.API('find', {ids: ids, type: this.type}, data => {
+      let dataList = data.infos.map(o => (array => {
+        return array.map(s => o[s]);
+      })(${js.listData}));
+      let array = {
+        titleList:${js.listView},
+        dataList: dataList
+      };
+      NP.Poi.Excel.post(array, function (id) {
+        NP.File.download(id);
+        uiTipWorking.destroy();
+      });
+    });
+  },
+  /**
+   * 表单
+   */
+  table(data, IsView) {
+    let table = $('#table').clone();
+    Object.keys(data).forEach(o => {
+      $(`[data-name="${o}"]`, table).val(data[o]);
+    });
+    if (IsView) {
+      table.addClass('tableForm-readonly');
+    }
+    table.show();
+    return table;
+  },
+  /**
+   * 后台交互
+   */
+  API(method, data, callback) {
+    NP.Common.Action.post(data, "${rest.rootPath}/" + method, callback)
+  }
+};

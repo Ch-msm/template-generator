@@ -26,8 +26,12 @@ public class ${java.className} extends ${proto.protoClass}ServiceGrpc.${proto.pr
   private static final util.log.Log L = new Log("${common.name}");
   public static final String TABLE_NAME = "${java.tableName}";
 
-  public void ${java.className}() {
-    r.db(Constant.RETHINKDB_DB).tableCreate(TABLE_NAME);
+  public ${java.className}() {
+    try (Connection rc = RD.connect(Constant.RETHINKDB_DB)){
+    r.db(Constant.RETHINKDB_DB).tableCreate(TABLE_NAME).run(rc);
+    } catch (Exception e) {
+    //忽略
+    }
   }
 
 
@@ -48,7 +52,7 @@ public class ${java.className} extends ${proto.protoClass}ServiceGrpc.${proto.pr
     try (Connection rc = RD.connect(Constant.RETHINKDB_DB)) {
       ${proto.protoClass}Proto.Info.Builder builder = request.toBuilder();
       builder.setId(UUID.randomUUID().toString());
-      r.table(TABLE_NAME).insert(builder).run(rc);
+      r.table(TABLE_NAME).insert(Json.toHashMap(builder)).run(rc);
       responseObserver.onNext(${proto.protoClass}Proto.Empty.getDefaultInstance());
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -86,7 +90,7 @@ public class ${java.className} extends ${proto.protoClass}ServiceGrpc.${proto.pr
   public void update(${proto.protoClass}Proto.Info request, StreamObserver<${proto.protoClass}Proto.Empty> responseObserver) {
     L.start("修改:" + Json.toJson(request));
     try (Connection rc = RD.connect(Constant.RETHINKDB_DB)) {
-      r.table(TABLE_NAME).get(request.getId()).update(request).run(rc);
+      r.table(TABLE_NAME).get(request.getId()).update(Json.toHashMap(request)).run(rc);
       responseObserver.onNext(${proto.protoClass}Proto.Empty.getDefaultInstance());
       responseObserver.onCompleted();
     } catch (Exception e) {

@@ -43,7 +43,7 @@ message Info {
 //集合
 message List {
   repeated Info infos = 1; //详情集合
-  int32 count = 2; //总数
+  int64 count = 2; //总数
 }
 
 //查询条件

@@ -30,14 +30,14 @@ public class Ini {
       }
       Pattern pattern = Pattern.compile("\\[(.*?)]");
       Matcher matcher = pattern.matcher(s);
-      if (matcher.find()) {
+      if (matcher.find() && "[".equals(s.substring(0, 1))) {
         s = matcher.group(1);
         Map<String, String> tempMap = new HashMap<>(16);
         map.put(s, tempMap);
         key[0] = s;
       } else {
         String[] value = s.split("=");
-        getMap(key[0]).put(value[0].strip(), value[1].strip());
+        getMap(key[0]).put(value[0].strip(), value.length>1?value[1].strip():"");
       }
     });
   }

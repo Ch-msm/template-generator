@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>编辑器</title>
+  <link rel="stylesheet" type="text/css" href="editer.css"/>
+</head>
+<body>
+<div class="tree">
+
+</div>
+<div class="editer">
+  <div class="editer-main">
+    <div class="editer-line-number">
+      <div>1</div>
+    </div>
+    <div class="editer-content">
+      <div></div>
+    </div>
+  </div>
+  <textarea></textarea>
+</div>
+
+<div class="navigation">
+  <div><img src="工具.png"/>代码生成工具</div>
+  <div></div>
+  <div>
+    <button>新增项目</button>
+    <button>添加模块</button>
+    <button>生成代码</button>
+    <button>保存改变</button>
+    <button>清空模板</button>
+  </div>
+</div>
+</body>
+<script>
+  let textarea = document.getElementsByTagName("textarea").item(0);
+  let editer = document.querySelector("div.editer-main");
+  textarea.addEventListener('input', function () {
+    let array = setKeyWord(this.value);
+    let div = document.querySelector("div.editer-content");
+    let divLineNumber = document.querySelector("div.editer-line-number");
+    div.innerHTML = "";
+    divLineNumber.innerHTML = '';
+    array.forEach((o, i) => {
+      let tempDiv = document.createElement("div");
+      let tempDiv1 = document.createElement("div");
+      tempDiv.innerHTML = o;
+      tempDiv1.innerText = i + 1 + '';
+      div.appendChild(tempDiv);
+      divLineNumber.appendChild(tempDiv1);
+    });
+    setLineNumber();
+  });
+  textarea.addEventListener('click', () => {
+    setLineNumber();
+  });
+  let key = ['Enter', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
+  textarea.addEventListener('keyup', e => {
+    if (key.includes(e.key)) {
+      setLineNumber();
+    }
+  });
+  const setLineNumber = () => {
+    let selectionEnd = textarea.selectionEnd;
+    let array = textarea.value.split("\n").map(o => {
+      return o.replace(/ /g, "0") + "0" || "0";
+    });
+    let line = 0, length = 0;
+    if (array.length === 1 || selectionEnd === 0) {
+      line = 1;
+    } else {
+      array.forEach((o, i) => {
+        let flag = false;
+        for (let s of o) {
+          if (selectionEnd === length) {
+            line = i + 1;
+            flag = true;
+          }
+          ++length;
+        }
+        if (flag) {
+          return false;
+        }
+      });
+      line = line || 1;
+    }
+    let checked_content = document.querySelector('div.editer-content-checked');
+    let checked_line_number = document.querySelector('div.editer-line-number-checked');
+    if (checked_content) {
+      checked_content.classList.remove("editer-content-checked")
+    }
+    if (checked_line_number) {
+      checked_line_number.classList.remove("editer-line-number-checked");
+    }
+    document.querySelector(`div.editer-content > div:nth-child(${line})`).classList.add("editer-content-checked");
+    document.querySelector(`div.editer-line-number > div:nth-child(${line})`).classList.add("editer-line-number-checked");
+  };
+  textarea.addEventListener('scroll', () => {
+    index.scrollTop = textarea.scrollTop;
+  });
+
+  let symbol = '<span class="editer-content-symbol">=</span>';
+  const setKeyWord = value => {
+    value = value.replace(/ /g, '&blank');
+    value = value.replace(/=/g, symbol);
+    value = value.replace(/string/g, '<span class="editer-content-keyword-1">string</span>');
+    value = value.replace(/repeated/g, '<span class="editer-content-keyword-1">repeated</span>');
+    value = value.replace(/int32/g, '<span class="editer-content-keyword-1">int32</span>');
+    value = value.replace(/int64/g, '<span class="editer-content-keyword-1">int64</span>');
+    value = value.replace(/bool/g, '<span class="editer-content-keyword-1">bool</span>');
+    value = value.replace(/&blank/g, '<span class="blank"></span>');
+    let array = value.split("\n");
+    array = array.map(o => {
+      if (o) {
+        if (o.match(symbol)) {
+          let v = o.split('<')[0];
+          o = o.replace(v, `<span class="editer-content-field">${v}</span>`);
+        }
+        let index = o.indexOf("#");
+        if (index !== -1) {
+          let v = o.substr(index);
+          o = o.replace(v, `<span class="editer-content-note">${v}</span>`);
+        }
+        let index1 = o.indexOf("]");
+        if (o.substr(0, 1) === '[' && index1 !== -1) {
+          let v = o.substr(1, index1 - 1);
+          o = o.replace(v, `<span class="editer-content-title">${v}</span>`);
+        }
+      }
+      return o;
+    });
+    console.log(array)
+
+    return array;
+  };
+</script>
+</html>

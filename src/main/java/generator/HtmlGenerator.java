@@ -33,7 +33,7 @@ public class HtmlGenerator implements Generator {
   public void generator(Ini ini, String path) {
     this.ini = ini;
     try {
-      Path target = Paths.get("generator/web/" + ini.get("html.name") + ".html");
+      Path target = Paths.get("generator",ini.get("common.dir"),ini.get("html.name") + ".html");
       Files.deleteIfExists(target);
       Files.createFile(target);
       List<String> collect = loadResource(path)

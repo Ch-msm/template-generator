@@ -25,7 +25,7 @@ public class RestGenerator implements Generator {
   @Override
   public void generator(Ini ini, String path) {
     try {
-      Path target = Paths.get("generator/rest/" + ini.get("rest.className") + ".java");
+      Path target = Paths.get("generator",ini.get("common.dir"),ini.get("rest.className") + ".java");
       Files.deleteIfExists(target);
       Files.createFile(target);
       List<String> collect = loadResource(path)

@@ -27,7 +27,7 @@ public class ProtoGenerator implements Generator {
   public void generator(Ini ini, String path) {
     try {
       this.ini = ini;
-      Path target = Paths.get("generator/proto/" + ini.get("proto.protoName") + ".proto");
+      Path target = Paths.get( "generator",ini.get("common.dir"),ini.get("proto.protoName") + ".proto");
       Files.deleteIfExists(target);
       Files.createFile(target);
       List<String> collect = loadResource(path)

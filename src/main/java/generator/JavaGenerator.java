@@ -26,7 +26,7 @@ public class JavaGenerator implements Generator {
   public void generator(Ini ini, String path) {
 
     try {
-      Path target = Paths.get("generator/java/" + ini.get("java.className") + ".java");
+      Path target = Paths.get("generator",ini.get("common.dir"),ini.get("java.className") + ".java");
       Files.deleteIfExists(target);
       Files.createFile(target);
       List<String> collect = loadResource(path)

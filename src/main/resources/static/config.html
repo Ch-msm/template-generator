@@ -3,37 +3,35 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>${html.title}</title>
+  <title>巡检:基础配置</title>
   <!--公共(不得修改)-->
-  <link rel="stylesheet" href="${html.path}common/c.css"/>
-  <link rel="stylesheet" type="text/css" href="${html.path}common/np/np.css"/>
-  <link rel="stylesheet" href="${html.path}common/tool.css"/>
-  <script src="${html.path}common/lib/jquery-3.2.1.min.js"></script>
-  <script src="${html.path}common/lib/moment.js"></script>
-  <script src="${html.path}common/c.js"></script>
-  <script src="${html.path}common/np/np.js"></script>
-  <script src="${html.path}common/tool.js"></script>
-  <script src="${html.path}common/lib/websocket_file.js"></script>
-  <script src="${html.path}common/lib/websocket_grpc.js"></script>
+  <link rel="stylesheet" href="../../common/c.css"/>
+  <link rel="stylesheet" type="text/css" href="../../common/np/np.css"/>
+  <script src="../../common/lib/jquery-3.2.1.min.js"></script>
+  <script src="../../common/lib/moment.js"></script>
+  <script src="../../common/c.js"></script>
+  <script src="../../common/np/np.js"></script>
+  <script src="../../common/tool.js"></script>
+  <script src="../../common/np/np.js"></script>
+  <script src="../../common/lib/websocket_file.js"></script>
+  <script src="../../common/lib/websocket_grpc.js"></script>
   <!--特殊-->
-  <script src="${html.name}.js"></script>
+  <script src="config.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      ${html.jsVarName}.init();
+      Config.init();
     });
   </script>
 </head>
 <body>
-
 <div class="ui-page">
   <header>
     <div class="ui-bar-three">
       <!--固定:状态切换区域-->
-      <div${html.toggle1}>
-
+      <div id="toggle1">
       </div>
       <!--固定:空-->
-      <div${html.toggle2}></div>
+      <div id="toggle2"></div>
       <!--固定:搜索区域-->
       <div>
         <!--可选:关键字搜索-->
@@ -44,19 +42,16 @@
         <!--固定:重置按钮-->
         <button data-ui-button-reload class="ui-button-circle">重置</button>
         <!--可选:高级搜索-->
-        <if:advancedSearch>
           <button data-ui-button-search-more class="ui-button-circle" data-id="pageMore">高级搜索&#xe64f;</button>
-        </if:advancedSearch>
       </div>
     </div>
     <!--
     可选:如果存在更多按钮,则必须设置.data-id-more需与更多按钮的data-id保持一致.
     -->
-    <if:advancedSearch>
       <div class="ui-more" data-id-more="pageMore">
-        ${html.advancedSearchItem}
+        <section id="id1"></section>
+        <section id="id2"></section>
       </div>
-    </if:advancedSearch>
   </header>
   <!---->
   <article>
@@ -65,25 +60,18 @@
         <!--固定:按钮区域-->
         <div>
           <ul class="ui-buttons ui-buttons-border">
-            <if:addButton>
               <li id="addButton">
                 <i class="iconfont icon-zengjia"></i>
                 新增
               </li>
-            </if:addButton>
-
-            <if:exportAllButton>
               <li id="exportAllButton">
                 <i class="iconfont icon-daochu"></i>
                 导出全部
               </li>
-            </if:exportAllButton>
-            <if:exportCheckedButton>
               <li id="exportCheckedButton">
                 <i class="iconfont icon-xuanzhong"></i>
                 导出选中
               </li>
-            </if:exportCheckedButton>
           </ul>
         </div>
         <!--固定:空-->
@@ -100,12 +88,9 @@
     <div id="list"></div>
   </article>
 </div>
-
 <table id="table" class="tableForm" style="display: none">
   <tbody>
-
   </tbody>
 </table>
-
 </body>
 </html>
