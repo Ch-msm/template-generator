@@ -45,7 +45,7 @@ public class Start implements WebMvcConfigurer {
 
   public static void run(String dir) throws IOException {
 
-    Ini ini = new Ini(dir + "build/assignment.conf");
+    Ini ini = new Ini(dir + "build/spare_part/info.conf");
     createDir(ini.get("common.dir"));
 
     //生成协议

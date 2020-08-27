@@ -55,7 +55,7 @@ public class ProtoGenerator implements Generator {
 
     String[] array = ini.get("proto.info").split("\\|");
     StringBuilder valueBuilder = new StringBuilder(value);
-    int i = 3;
+    int i = 4;
     for (String o : array) {
       valueBuilder.append("  ").append(o).append(" = ").append(++i).append(";\n");
     }

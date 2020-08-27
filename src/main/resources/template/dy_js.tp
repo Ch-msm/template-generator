@@ -26,10 +26,10 @@ const ${html.jsVarName} = {
       </if:exportAllButton>
       <if:addButton>
       $('#exportCheckedButton').on('click', () => {
-  ``````let ids = this.cTable.getCheckedIdArray();
+      let ids = this.cTable.getCheckedIdArray();
         if (ids.length > 0) {
           this.export(ids);
-        }``````
+        }
       });
       </if:addButton>
       $('[data-ui-button-search-now]').on('click', () => {
@@ -86,9 +86,16 @@ const ${html.jsVarName} = {
     dialog.addAction('保存', function () {
       let v = Tool.formValidator(table);
       if (v) {
-        ${html.jsVarName}.API('add', v, () => {
-          dialog.destroy();
-          window.location.reload();
+        ${html.jsVarName}.API('add', v, message => {
+          if(message.message){
+                               let uiTipDialog = new CTipDialog('提示', message.message);
+                               uiTipDialog.addAction('关闭', () => {
+                                 uiTipDialog.destroy();
+                               });
+                    }else {
+                               dialog.destroy();
+                               window.location.reload();
+                             }
         });
       }
     });
@@ -119,11 +126,20 @@ const ${html.jsVarName} = {
     let dialog = new CDialog("修改");
     dialog.setContent(table);
     dialog.addAction('保存', function () {
+     let v = Tool.formValidator(table);
       if (v) {
         v.id = data.id;
-        ${html.jsVarName}.API('update', v, () => {
-          dialog.destroy();
-          window.location.reload();
+        v.time = moment().format('YYYY-MM-DD HH:mm:ss');
+        ${html.jsVarName}.API('update', v, message => {
+           if(message.message){
+                      let uiTipDialog = new CTipDialog('提示', message.message);
+                      uiTipDialog.addAction('关闭', () => {
+                        uiTipDialog.destroy();
+                      });
+           }else {
+                      dialog.destroy();
+                      window.location.reload();
+                    }
         });
       }
     });
@@ -206,7 +222,7 @@ const ${html.jsVarName} = {
    * 详情
    */
   view(data) {
-    let table = this.table(data, true);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        table(data, true);
+    let table = this.table(data, true);
     let dialog = new CDialog("详情");
     dialog.setContent(table);
     dialog.addAction('关闭', function () {

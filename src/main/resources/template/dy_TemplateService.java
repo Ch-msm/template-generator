@@ -4,13 +4,14 @@ import auto.grpc.${proto.protoName}.${proto.protoClass}Proto;
 import auto.grpc.${proto.protoName}.${proto.protoClass}ServiceGrpc;
 import com.rethinkdb.gen.ast.Filter;
 import com.rethinkdb.net.Connection;
-import com.rethinkdb.net.Cursor;
 import io.grpc.stub.StreamObserver;
 import service.Constant;
 import util.Json;
 import util.RethinkDb;
 import util.log.Log;
+import util.Time;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,13 +48,15 @@ public class ${java.className} extends ${proto.protoClass}ServiceGrpc.${proto.pr
    * </pre>
    */
   @Override
-  public void add(${proto.protoClass}Proto.Info request, StreamObserver<${proto.protoClass}Proto.Empty> responseObserver) {
+  public void add(${proto.protoClass}Proto.Info request, StreamObserver<${proto.protoClass}Proto.Message> responseObserver) {
     L.start("新增:" + Json.toJson(request));
     try (Connection rc = RD.connect(Constant.RETHINKDB_DB)) {
+      ${proto.protoClass}Proto.Message.Builder message = ${proto.protoClass}Proto.Message.newBuilder();
       ${proto.protoClass}Proto.Info.Builder builder = request.toBuilder();
       builder.setId(UUID.randomUUID().toString());
+      builder.setTime(Time.toDateTimeString(Time.localTimestamp()));
       r.table(TABLE_NAME).insert(Json.toHashMap(builder)).run(rc);
-      responseObserver.onNext(${proto.protoClass}Proto.Empty.getDefaultInstance());
+      responseObserver.onNext(message.build());
       responseObserver.onCompleted();
     } catch (Exception e) {
       responseObserver.onError(e);
@@ -87,11 +90,12 @@ public class ${java.className} extends ${proto.protoClass}ServiceGrpc.${proto.pr
    * </pre>
    */
   @Override
-  public void update(${proto.protoClass}Proto.Info request, StreamObserver<${proto.protoClass}Proto.Empty> responseObserver) {
+  public void update(${proto.protoClass}Proto.Info request, StreamObserver<${proto.protoClass}Proto.Message> responseObserver) {
     L.start("修改:" + Json.toJson(request));
     try (Connection rc = RD.connect(Constant.RETHINKDB_DB)) {
+     ${proto.protoClass}Proto.Message.Builder message = ${proto.protoClass}Proto.Message.newBuilder();
       r.table(TABLE_NAME).get(request.getId()).update(Json.toHashMap(request)).run(rc);
-      responseObserver.onNext(${proto.protoClass}Proto.Empty.getDefaultInstance());
+      responseObserver.onNext(message.build());
       responseObserver.onCompleted();
     } catch (Exception e) {
       responseObserver.onError(e);
@@ -109,18 +113,23 @@ public class ${java.className} extends ${proto.protoClass}ServiceGrpc.${proto.pr
   public void find(${proto.protoClass}Proto.Search request, StreamObserver<${proto.protoClass}Proto.List> responseObserver) {
     L.start("查询:" + Json.toJson(request));
     try (Connection rc = RD.connect(Constant.RETHINKDB_DB)) {
-      Filter filter = r.table(TABLE_NAME).filter(row -> row.g("id").eq("").not());
+      Filter filter = r.table(TABLE_NAME).orderBy(
+         r.desc("time")
+       ).filter(row -> row.g("id").eq("").not());
       if (!request.getKeyword().isEmpty()) {
         filter = filter.filter(row -> row.toJson().match(request.getKeyword()));
       }
+      if(request.getIdsCount()>0){
+         filter=filter.filter(row->r.expr(request.getIdsList()).contains(row.g("id")));
+      }
       ${proto.protoClass}Proto.List.Builder builder = ${proto.protoClass}Proto.List.newBuilder();
       int count = request.getCount(), page = request.getPage();
-      Cursor<Map<String, Object>> cursor = count > 0 ?
+      List<Map<String, Object>> cursor = count > 0 ?
           filter.skip((page - 1) * count).limit(count).run(rc)
           : filter.run(rc);
       builder.setCount(filter.count().run(rc));
-      while (cursor.hasNext()) {
-        builder.addInfos(mapToProto(cursor.next()));
+      for(Map<String, Object> m:cursor){
+        builder.addInfos(mapToProto(m));
       }
       responseObserver.onNext(builder.build());
       responseObserver.onCompleted();
